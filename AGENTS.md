@@ -5,24 +5,124 @@
 
 ---
 
-## 0. Đọc trước khi làm bất cứ thứ gì
+## 0. Startup Protocol
+
+### Tầng 1 — Always load, full
+Đọc toàn bộ, không filter, mọi task.
 
 ```bash
-# Bước 1 — nạp overview
 cat .context/GLOBAL.md
-
-# Bước 2 — nạp context của module liên quan đến task
-python cli.py load <module_path> . --include-manual
-
-# Bước 3 — kiểm tra tensions đang OPEN
 cat .context/TENSIONS_OPEN.md
 ```
 
-Nếu bước 2 trả về `[manual]` vẫn còn `_Chưa có ghi chú._` → **DỪNG. Hỏi lại human trước khi implement.**
+### Tầng 2 — Always load, filtered
+
+```bash
+# Chỉ đọc section current milestone
+cat .context/MILESTONES.md
+
+# Đọc theo tag filter:
+# - Entry có tag match task keywords → đọc full
+# - Entry không match → chỉ đọc Tension + Status
+# - Exception: Status OPEN → luôn đọc full dù tag không match
+cat .context/TENSIONS_ACTIVE.md
+```
+
+### Tầng 3 — Load on demand
+
+```bash
+# Load module match với task scope
+python cli.py load <module_path> . --include-manual
+
+# Load planning chỉ khi task liên quan scope/version/UX direction
+cat .context/planning/<file>.md
+```
+
+### Không load mặc định
+- `.context/TENSIONS_HISTORY.md`
+- `.context/MILESTONES_HISTORY.md`
+- `.context/proposals/*`
+
+Chỉ load khi human yêu cầu audit hoặc review proposal.
+
+### Sau khi load xong — bắt buộc
+
+```
+1. Check TENSIONS_OPEN.md — có entry liên quan task không?
+   → Nếu có → follow Tension Detection rules (Section 3) trước khi proceed
+
+2. Check: TENSIONS.md có tồn tại song song với TENSIONS_OPEN.md không?
+   → Nếu có → báo human: "TENSIONS.md chưa migrate sang V3.
+     Bắt đầu migration session không?"
+   → Không tự migrate
+   → Nếu human từ chối → ghi note, tiếp tục task hiện tại
+
+3. Nếu [manual] của module liên quan vẫn còn _Chưa có ghi chú._
+   → DỪNG. Hỏi lại human trước khi implement.
+```
+
+### Skills
+
+- Definition of Ready: `.context/skills/socratic-dor/SKILL.md`
 
 ---
 
-## 1. Architecture — những gì agent phải biết
+## 0.1 Definition of Ready Protocol
+
+Activate khi human message match một trong các trigger:
+
+**Category 1 — Explicit brainstorm**
+"brainstorm", "chưa rõ", "muốn thảo luận", "help me think"
+
+**Category 2 — Reference-based (implicit vagueness)**
+"như X", "giống X", "tương tự X" / "tạo cho tôi app/web/tool..." / "tôi muốn làm cái gì đó..."
+
+**Category 3 — Scope quá lớn**
+"toàn bộ", "cả hệ thống", "từ đầu đến cuối", "from scratch"
+
+**Opt-out** — dừng ngay khi human nói:
+"đủ rồi", "bắt đầu làm đi", "skip brainstorm"
+
+→ Thực hiện theo `.context/skills/socratic-dor/SKILL.md`
+
+---
+
+## 0.2 Toolchain Installation Protocol
+
+Trước mọi installation — trình bày plan, đợi human approve, rồi mới thực hiện.
+
+**Ưu tiên môi trường:**
+1. WSL2
+2. Docker / Podman
+3. Host machine
+
+Exception — dùng host nếu: project đã có môi trường host setup và document,
+dependency yêu cầu hardware access trực tiếp, hoặc human explicitly chọn.
+
+**Template bắt buộc trước khi install:**
+
+```
+## Installation Plan — [tool name]
+
+Environment:  [WSL2 / Docker / host — lý do chọn]
+Location:     [path cụ thể]
+Version:      [X.X.X — fetch latest stable, kèm link]
+Dependencies: [list]
+Conflicts:    [có thể conflict với gì đang có]
+Rollback:     [uninstall bằng cách nào]
+
+Approve? [Y/N]
+```
+
+**Rules:**
+- Không install trước khi có human approval
+- Fetch latest stable — không tự quyết version từ memory
+- Nếu thực tế lệch plan giữa chừng → dừng, báo cáo, không improvise
+- Rollback field bắt buộc — phải biết cách undo trước khi được install
+
+---
+
+
 
 ### Plugin Registry
 
@@ -191,22 +291,43 @@ RESOLVED_ACTIVE → ARCHIVED:
 ## 3.1 Tag Taxonomy
 
 Khi viết tension entry mới, chọn tags từ danh sách này.
-Thêm tag mới: update taxonomy ở đây trước, sau đó mới dùng.
 
 ```
-blocks          — Gutenberg block development
-tailwind        — Tailwind CSS integration
-woocommerce     — WooCommerce blocks/patterns
-php             — PHP/WordPress plugin code
-theme           — Theme development
-quote-flow      — Quote/pricing flow feature
-schema          — context-gen schema/parser
-cli             — cli.py changes
-registry        — Plugin registry pattern
-staleness       — Staleness detection
-milestone       — Milestone transition decisions
+a11y            — Accessibility
 agent           — Agent workflow/protocol decisions
+blocks          — Gutenberg block development
+cli             — cli.py changes
+editor-governance — Custom block vs pattern/editor decisions
+map             — Map integration (OpenStreetMap, etc.)
+milestone       — Milestone transition decisions
+multilingual    — Multilingual/i18n
+patterns        — Gutenberg patterns
+php             — PHP/WordPress plugin code
+planning        — Planning snapshots, scope, version decisions
+product-data    — WooCommerce product data modeling
+quote-flow      — Quote/pricing flow feature
+registry        — Plugin registry pattern
+schema          — context-gen schema/parser
+slider          — Slider component
+spam-protection — Spam protection
+staleness       — Staleness detection
+tailwind        — Tailwind CSS integration
+theme           — Theme development
+woocommerce     — WooCommerce blocks/patterns
 ```
+
+### Pending tags (chưa approved)
+<!-- Agent thêm vào đây nếu phát sinh tag mới mid-task -->
+<!-- Format: `tag-name` — proposed [YYYY-MM-DD], context: [mô tả ngắn] -->
+
+### Tag rules
+- Chỉ dùng tags trong taxonomy trên
+- Phát sinh domain mới chưa có tag:
+  1. Thêm vào section Pending tags với proposed name + date
+  2. Hỏi human ngay trong turn đó — không đợi cuối task
+  3. Human approve → move lên taxonomy, xóa pending
+  4. Human reject → dùng tag gần nhất, xóa pending
+  5. Không tự promote pending tag lên taxonomy khi chưa có human approval
 
 ---
 
@@ -244,6 +365,35 @@ Trước khi implement parser mới, dùng prompt template `docs/prompts/00_add-
 | `MANUAL_SECTION` template trong `schema.py` | agent dựa vào template để detect [manual] chưa điền |
 | `AUTO_START` / `AUTO_END` markers trong `schema.py` | thay đổi markers = break toàn bộ merge logic |
 | Hash trong `AUTO_START` marker của `.context/*.md` | metadata cho staleness detection, không phải lỗi format |
+
+---
+
+## 5.1 End-of-Session Checklist
+
+Sau khi task hoàn thành, trước khi close session:
+
+### Bắt buộc
+```bash
+python cli.py build . --quiet
+```
+- Check TENSIONS_OPEN.md — có tension mới phát sinh không? Nếu có → ghi vào
+- Check Pending tags trong Section 3.1 — có tag chưa approved không? Nếu có → hỏi human ngay
+
+### Nếu có quyết định kiến trúc trong session
+- Update `[manual]` section của module liên quan
+- Nếu quyết định resolve một tension → move từ TENSIONS_OPEN sang TENSIONS_ACTIVE
+
+### Nếu có thay đổi scope hoặc milestone
+```bash
+python cli.py check-consistency .
+```
+- Update MILESTONES.md current milestone section
+
+### Commit
+```bash
+git add .context/
+git commit -m "context: session [date] — [1 dòng quyết định chính]"
+```
 
 ---
 
