@@ -35,6 +35,7 @@ from tensions_writer import write_staleness_tensions, write_single_staleness
 import parsers.rust_parser   # noqa: F401
 import parsers.ts_parser     # noqa: F401
 import parsers.php_parser    # noqa: F401
+import parsers.powershell_parser  # noqa: F401
 
 console = Console()
 stderr = Console(stderr=True)
@@ -46,6 +47,8 @@ def _output_path(project_root: Path, dir_path: Path) -> Path:
     """Map src-tauri/src/commands → .context/src-tauri_src_commands.md"""
     rel = dir_path.relative_to(project_root)
     stem = str(rel).replace("/", "_").replace("\\", "_")
+    if stem in ("", "."):
+        stem = "root"
     return project_root / ".context" / f"{stem}.md"
 
 

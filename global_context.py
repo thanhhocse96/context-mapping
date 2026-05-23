@@ -45,6 +45,8 @@ def _has_source_file(project_root: Path, pattern: str, skip_dirs: set[str]) -> b
 
 def _context_file_for_module_path(module_path: str) -> str:
     stem = module_path.replace("/", "_").replace("\\", "_")
+    if stem in ("", "."):
+        stem = "root"
     return f".context/{stem}.md"
 
 

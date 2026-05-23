@@ -101,9 +101,26 @@ Add to `package.json`:
 | TypeScript `.ts` | `export function`, arrow functions, interfaces, types |
 | TSX `.tsx` | same as TypeScript + React components |
 | PHP `.php` | functions, classes, imports, WordPress `add_action` / `add_filter` string callbacks |
+| PowerShell `.ps1` / `.psm1` / `.psd1` | script `param(...)`, function definitions, command invocations, using statements via PowerShell AST |
 
 The `[manual]` section works the same regardless of stack.  
 Vue, Svelte, Python, Go — only the parser changes. The philosophy doesn't.
+
+### PowerShell parser backend
+
+PowerShell support uses the official PowerShell AST API:
+
+```powershell
+[System.Management.Automation.Language.Parser]::ParseFile(...)
+```
+
+The parser prefers `pwsh` when available and falls back to Windows PowerShell when
+running under WSL with Windows interop. It does not use regex for syntax extraction.
+
+The parser has been smoke-tested against:
+
+- `driverstore-cleaner`, a PowerShell/docs-heavy Windows storage cleanup repo.
+- ChrisTitusTech WinUtil, used as a real-world PowerShell source-of-truth fixture.
 
 ---
 
