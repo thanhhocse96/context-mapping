@@ -177,6 +177,20 @@ Stdout của `load` phải sạch tuyệt đối — chỉ có content của con
 
 ## 2.1. Environment
 
+### Local environment file
+
+Nếu có file `.local/ENVIRONMENT.md`, agent phải đọc file đó trước khi chạy toolchain local, tạo venv, install dependency, hoặc chạy command phụ thuộc path máy hiện tại.
+
+File `.local/ENVIRONMENT.md` là machine-local, đã được git ignore, và KHÔNG commit. File này có thể chứa path, command, version, hoặc thông tin riêng của máy hiện tại.
+
+Nếu chưa có `.local/ENVIRONMENT.md` và task cần setup/toolchain local, agent phải hỏi human hoặc tạo file từ template sau khi được xác nhận:
+
+```text
+docs/templates/00_local-environment.example.md
+```
+
+Không ghi path máy cụ thể, credential, hoặc local-only command vào `.context/*.md` hoặc docs commit trừ khi đó là decision chung áp dụng cho mọi môi trường.
+
 ### WSL
 
 Khi làm việc trên Windows và có Debian WSL, ưu tiên chạy toolchain Python trong WSL thay vì Windows Store `python.exe`.

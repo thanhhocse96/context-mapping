@@ -64,11 +64,15 @@ That's the contract.
 
 ## Setup
 
+Recommended on Windows with WSL:
+
 ```bash
 git clone https://github.com/you/context-gen.git
 cd context-gen
-python3 -m venv .venv
-source .venv/bin/activate
+
+mkdir -p ~/.venvs
+python3 -m venv ~/.venvs/context-mapping
+source ~/.venvs/context-mapping/bin/activate
 python -m pip install -r requirements.txt
 
 # First run — generate all .context/*.md
@@ -80,6 +84,19 @@ python cli.py watch .
 # Load context for a specific module (pipe to LLM or clipboard)
 python cli.py load src-tauri/src/commands . --include-manual
 ```
+
+If the repo is cloned inside the Linux filesystem, using a repo-local `.venv`
+is also fine. If the repo is accessed through `/mnt/<drive>/...`, keep the venv
+in the Linux filesystem, for example `~/.venvs/context-mapping`.
+
+Machine-local setup details can be stored in:
+
+```text
+.local/ENVIRONMENT.md
+```
+
+That file is ignored by git. Use
+`docs/templates/00_local-environment.example.md` as the starting point.
 
 Add to `package.json`:
 ```json
