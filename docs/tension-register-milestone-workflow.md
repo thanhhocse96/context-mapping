@@ -134,7 +134,7 @@ Chỉ khi human approve milestone/version transition:
 1. Move resolved active entries của milestone cũ từ `TENSIONS_ACTIVE.md` sang `TENSIONS_HISTORY.md`.
 2. Set `Status: ARCHIVED`.
 3. Update `MILESTONES.md`.
-4. Move milestone cũ sang `MILESTONES_HISTORY.md`.
+4. Keep completed milestone evidence in `docs/milestones/`.
 5. Update current milestone trong `AGENTS.md`.
 
 ## Milestone Register
@@ -143,7 +143,8 @@ Milestone state được quản lý ở:
 
 ```text
 .context/MILESTONES.md
-.context/MILESTONES_HISTORY.md
+.context/MILESTONE_ROADMAP.md
+docs/milestones/
 ```
 
 `MILESTONES.md` là source of truth cho:
@@ -153,7 +154,54 @@ Milestone state được quản lý ở:
 - checklist
 - transition rule
 
+`MILESTONE_ROADMAP.md` là detailed backlog. Agent chỉ promote một future milestone mỗi lần, không load hoặc implement nhiều future milestones cùng lúc.
+
+`docs/milestones/` là implemented evidence: mỗi meaningful completed slice phải có hoặc update một milestone doc tương ứng.
+
 `AGENTS.md` có current milestone summary nhưng phải match `MILESTONES.md`.
+
+## Version Naming Rule
+
+For context-gen, `V0`, `V1`, `V2`, and `V3` are development milestone/phase codes. They are not official package versions.
+
+SemVer (`MAJOR.MINOR.PATCH`) starts when packaging/release artifacts exist, planned for `V3 - Packaging And Distribution`.
+
+Before V3:
+
+- Do not assign `0.x.y` or `1.0.0` as an official package version.
+- Use `Future Candidate` if a future release version is uncertain.
+- Name milestone evidence by milestone code, for example `V1_001_milestone-source-protocol.md`.
+
+At V3:
+
+- Define package versioning in `pyproject.toml` or equivalent metadata.
+- Document installed CLI version behavior.
+- Keep development checkout usage separate from installed package usage.
+
+## Milestone Source Priority
+
+Khi xác định scope milestone, agent dùng thứ tự source:
+
+```text
+1. Latest explicit human instruction
+2. .context/MILESTONES.md current milestone
+3. .context/MILESTONE_ROADMAP.md promoted milestone
+4. .context/*.md manual sections and .context/modules/*.md when present
+5. docs/*.md architecture/workflow decisions
+6. docs/milestones/*.md implemented evidence
+7. code reality
+```
+
+Docs giải thích intent, nhưng implemented behavior và tests chứng minh điều đã hoạt động.
+
+Khi promote milestone kế tiếp:
+
+1. Đọc roadmap entry.
+2. Đọc tất cả source docs trong entry đó.
+3. So sánh source docs với code hiện tại và docs/milestones evidence.
+4. Copy chỉ goal, acceptance, out-of-scope, source docs của milestone đó vào `.context/MILESTONES.md`.
+5. Update current milestone trong `AGENTS.md`.
+6. Hỏi human nếu acceptance mơ hồ, risky, hoặc conflict.
 
 ## Transition Rule
 
@@ -183,9 +231,9 @@ Verification gate:
 context-gen check-consistency .
 ```
 
-## Migration Notes
+## Current context-gen Status
 
-SKVN đã migrate từ `TENSIONS.md` cũ sang:
+context-gen uses the V3 split tension files:
 
 ```text
 .context/TENSIONS_OPEN.md
@@ -193,16 +241,14 @@ SKVN đã migrate từ `TENSIONS.md` cũ sang:
 .context/TENSIONS_HISTORY.md
 ```
 
-Current active decision:
+Current milestone state lives in:
 
-- `product-grid / product-list`: `RESOLVED_ACTIVE`, V1 dùng WooCommerce native blocks/patterns; custom Product Grid/List hoặc style blocks để V2.
+```text
+.context/MILESTONES.md
+.context/MILESTONE_ROADMAP.md
+```
 
-Current open tensions:
-
-- quote-flow
-- multilingual
-- slider
-- spam-protection
+Existing `RESOLVED_ACTIVE` entries from `V0` remain in `TENSIONS_ACTIVE.md` until human approves archival. `check-consistency` may report them as archive candidates while current milestone is `V1 - Governance And Milestone Workflow`.
 
 ## Key Principle
 

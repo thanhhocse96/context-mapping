@@ -5,6 +5,18 @@
 
 ---
 
+## Current Milestone
+
+Current milestone: V1 - Governance And Milestone Workflow
+
+Milestone source of truth: `.context/MILESTONES.md`.
+
+Detailed milestone backlog: `.context/MILESTONE_ROADMAP.md`.
+
+Version rule: `V0`, `V1`, `V2`, `V3` are development milestone codes, not package SemVer. Official SemVer starts when packaging/release artifacts exist, planned for V3.
+
+---
+
 ## 0. Startup Protocol
 
 ### Tầng 1 — Always load, full
@@ -28,6 +40,41 @@ cat .context/MILESTONES.md
 cat .context/TENSIONS_ACTIVE.md
 ```
 
+### Milestone source protocol
+
+Agent không được invent roadmap scope từ memory. Build milestone scope theo thứ tự source này:
+
+```text
+1. Latest explicit human instruction
+2. .context/MILESTONES.md current milestone
+3. .context/MILESTONE_ROADMAP.md promoted milestone
+4. .context/*.md manual sections and .context/modules/*.md when present
+5. docs/*.md architecture/workflow decisions
+6. docs/milestones/*.md implemented evidence
+7. code reality
+```
+
+Dùng `.context/MILESTONES.md` là active checklist và `.context/MILESTONE_ROADMAP.md` là backlog. Không load hoặc implement nhiều future milestones cùng lúc.
+
+Khi promote milestone kế tiếp:
+
+```text
+1. Read roadmap entry.
+2. Read every source doc listed in that entry.
+3. Compare source docs against current code and implemented milestone docs.
+4. Copy only that milestone's goal, acceptance, out-of-scope, and source docs into .context/MILESTONES.md.
+5. Update AGENTS.md current milestone line.
+6. Ask human if acceptance is vague, risky, or conflicts with sources.
+```
+
+Ask before coding khi:
+
+- Source docs conflict about behavior or priority.
+- Acceptance cannot be verified with a concrete test.
+- A live credential, paid service, browser install, or system package is required.
+- A DB migration, destructive file operation, or cleanup touches user data.
+- A decision would expand scope beyond the promoted milestone.
+
 ### Tầng 3 — Load on demand
 
 ```bash
@@ -40,10 +87,25 @@ cat .context/planning/<file>.md
 
 ### Không load mặc định
 - `.context/TENSIONS_HISTORY.md`
-- `.context/MILESTONES_HISTORY.md`
+- `.context/MILESTONE_ROADMAP.md` (except current/next milestone promotion)
 - `.context/proposals/*`
 
 Chỉ load khi human yêu cầu audit hoặc review proposal.
+
+### Documentation protocol
+
+Implemented milestone work belongs in `docs/milestones/`.
+
+Rules:
+
+- Milestone file names must match the milestone code from `.context/MILESTONES.md`, for example `V1_001_milestone-source-protocol.md`.
+- `V0`, `V1`, `V2`, `V3` are milestone/phase codes, not package versions.
+- Do not assign `0.x.y` or `1.0.0` official package versions before V3 packaging exists.
+- Every meaningful completed slice must create or update a milestone doc.
+- Milestone docs should start with workflow first, preferably Mermaid.
+- Milestone docs must explain what was implemented, which files changed, which design pattern was used, how to verify it, and known limits.
+- After adding, moving, or renaming a docs file, update `docs/README.md`.
+- If the current milestone changes, update `.context/MILESTONES.md`, `AGENTS.md`, and docs naming together.
 
 ### Sau khi load xong — bắt buộc
 
