@@ -33,6 +33,15 @@ Read:
 
 Do not overwrite existing project instructions or context files without reporting what already exists.
 
+Detect the governance root before creating milestone or tension files:
+
+- If the current repo contains multiple apps, packages, plugins, services, or deployable projects, treat the repo root as one program governance root.
+- Root `.context/MILESTONES.md` is the only milestone source of truth.
+- Root `.context/TENSIONS_OPEN.md`, `.context/TENSIONS_ACTIVE.md`, and `.context/TENSIONS_HISTORY.md` are the only tension system.
+- Subprojects use `Area:` or tags to scope work. Do not create `apps/<name>/.context/MILESTONES.md`, `plugins/<name>/.context/MILESTONES.md`, or package-local `TENSIONS_*.md`.
+- A subproject may keep an implementation checklist in its README or issue tracker, but it must not redefine roadmap authority.
+- Only create separate governance files if the subproject is already its own repository or the human explicitly approves a governance split.
+
 2. Confirm local environment shape
 
 If `.local/ENVIRONMENT.md` exists, read it first.
@@ -113,6 +122,7 @@ If AGENTS.md does not exist, create one with:
 - instruction to read `.context/GLOBAL.md`
 - instruction to load relevant module context with `../context-mapping/cli.py load <module_path> . --include-manual`
 - instruction to read `.context/TENSIONS_OPEN.md` if present
+- instruction that monorepo/multi-project milestones and tensions live at the governance root, while subprojects use `Area:` or tags
 - instruction that `.local/ENVIRONMENT.md` is machine-local and must not be committed
 - instruction that `[manual]` sections must not be overwritten
 
@@ -139,6 +149,7 @@ python ../context-mapping/cli.py build . --quiet
 Summarize:
 
 - files created or changed
+- which path was treated as the governance root
 - whether `.context/GLOBAL.md` exists
 - which modules were detected
 - whether any tension files exist

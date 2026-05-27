@@ -78,6 +78,36 @@ def _find_entries_wrong_milestone(filepath: Path, expected: str) -> list[str]:
 
 # ── Migration helpers ─────────────────────────────────────────────────────────
 
+def _is_in_ignored_dir(path: Path) -> bool:
+    ignored = {".git", ".venv", "node_modules", "vendor", "__pycache__"}
+    return any(part in ignored for part in path.parts)
+
+
+def _rel(path: Path, root: Path) -> str:
+    return path.relative_to(root).as_posix()
+
+
+def _find_nested_context_files(root: Path, filename: str) -> list[Path]:
+    root_file = root / ".context" / filename
+    return sorted(
+        path
+        for path in root.rglob(f".context/{filename}")
+        if path != root_file and not _is_in_ignored_dir(path)
+    )
+
+
+def _find_local_milestone_files(root: Path) -> list[Path]:
+    root_context_file = root / ".context" / "MILESTONES.md"
+    results: list[Path] = []
+    for path in root.rglob("MILESTONES.md"):
+        if path == root_context_file or _is_in_ignored_dir(path):
+            continue
+        if ".context" in path.parts:
+            continue
+        results.append(path)
+    return sorted(results)
+
+
 def parse_tension_entries(filepath: Path) -> list[dict]:
     """
     Parse TENSIONS.md (format cũ hoặc mới) thành list of dicts.
@@ -219,5 +249,46 @@ def run_consistency_checks(root: Path) -> tuple[list[str], list[str]]:
             "TENSIONS.md format cũ detected, chưa migrate.\n"
             "  → Chạy: context-gen migrate-tensions ."
         )
+
+    # Check 7: monorepo governance root must not fork inside subprojects.
+    if milestones_current:
+        nested_milestones = _find_nested_context_files(root, "MILESTONES.md")
+        if nested_milestones:
+            errors.append(
+                "Nested governance milestone files detected under a root milestone system:\n"
+                + "\n".join(f"  - {_rel(path, root)}" for path in nested_milestones)
+                + "\n  -> Use root .context/MILESTONES.md with Area/tags instead of local milestone authority."
+            )
+
+        local_milestones = _find_local_milestone_files(root)
+        if local_milestones:
+            warnings.append(
+                "Nested local milestone files detected under a root milestone system:\n"
+                + "\n".join(f"  - {_rel(path, root)}" for path in local_milestones)
+                + "\n  -> Verify these are implementation checklists, not separate roadmap authority."
+            )
+
+    root_has_tension_system = any(
+        (context_dir / filename).exists()
+        for filename in (
+            "TENSIONS_OPEN.md",
+            "TENSIONS_ACTIVE.md",
+            "TENSIONS_HISTORY.md",
+        )
+    )
+    if root_has_tension_system:
+        nested_tensions: list[Path] = []
+        for filename in (
+            "TENSIONS_OPEN.md",
+            "TENSIONS_ACTIVE.md",
+            "TENSIONS_HISTORY.md",
+        ):
+            nested_tensions.extend(_find_nested_context_files(root, filename))
+        if nested_tensions:
+            errors.append(
+                "Nested governance tension files detected under a root tension system:\n"
+                + "\n".join(f"  - {_rel(path, root)}" for path in sorted(nested_tensions))
+                + "\n  -> Use root .context/TENSIONS_*.md with Area/tags instead of local tension logs."
+            )
 
     return errors, warnings

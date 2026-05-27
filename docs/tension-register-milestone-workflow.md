@@ -160,6 +160,49 @@ docs/milestones/
 
 `AGENTS.md` có current milestone summary nhưng phải match `MILESTONES.md`.
 
+## Program Governance Root For Monorepos
+
+In a monorepo or product suite, governance root and code module root are not the same thing.
+
+If one repository contains many apps, packages, plugins, or services that still share product strategy, architecture constraints, release policy, or security policy, treat the repository as one program governance root.
+
+Rules:
+
+- Keep one milestone source of truth at root `.context/MILESTONES.md`.
+- Keep one tension system at root `.context/TENSIONS_OPEN.md`, `.context/TENSIONS_ACTIVE.md`, and `.context/TENSIONS_HISTORY.md`.
+- Do not create subproject milestone authority such as `apps/web/.context/MILESTONES.md`, `plugins/foo/.context/MILESTONES.md`, or `packages/api/MILESTONES.md`.
+- Scope subproject work with `Area:` or tags such as `frontend`, `api`, `plugin-a`, `cross-project`, or `program`.
+- Record conflicts that affect more than one subproject as root tensions with `Area: cross-project` or `Area: program`.
+- A subproject may have an implementation checklist in its README or issue tracker, but it must point back to the root milestone and must not redefine roadmap authority.
+- Only create separate milestone or tension systems after a subproject has been split into its own repository, or after explicit human approval of a governance split.
+
+Recommended milestone fields for monorepos:
+
+```markdown
+Area: <subproject | package | app | cross-project | program>
+Goal: <verifiable state>
+Acceptance:
+- <concrete check>
+Out of scope:
+- <scope boundary>
+Dependencies:
+- <shared contract, upstream milestone, runtime, or policy dependency>
+```
+
+Recommended tension fields for monorepos:
+
+```markdown
+Area: <subproject | cross-project | program>
+Milestone: <current root milestone>
+Tension: <specific governance or boundary conflict>
+Constraint: <root invariant being protected>
+Proposal: <recommended conservative path>
+Severity: low | high
+Decision: [human fill in]
+```
+
+`context-gen check-consistency .` checks for nested `.context/MILESTONES.md` and nested `.context/TENSIONS_*.md` under an existing root governance system. It reports these as errors because they create competing governance authority. Plain nested `MILESTONES.md` files are warnings so humans can decide whether they are harmless implementation checklists or accidental roadmaps.
+
 ## Version Naming Rule
 
 For context-gen, `V0`, `V1`, `V2`, and `V3` are development milestone/phase codes. They are not official package versions.
@@ -224,6 +267,9 @@ Checks chính:
 - `TENSIONS_ACTIVE.md` không chứa OPEN entries.
 - `TENSIONS_HISTORY.md` chỉ chứa ARCHIVED entries.
 - Active entries có milestone hợp lý với current milestone.
+
+- Nested `.context/MILESTONES.md` or `.context/TENSIONS_*.md` files are not allowed under a root governance system.
+- Nested `MILESTONES.md` files outside root `.context/` are warnings because they may be mistaken for separate roadmap authority.
 
 Verification gate:
 

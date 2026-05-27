@@ -70,3 +70,4 @@ After adding, moving, or renaming a docs file, update this index.
 ### V1 - Governance And Milestone Workflow
 
 1. [Milestone Source Protocol](milestones/V1_001_milestone-source-protocol.md)
+2. [Program Governance Root](milestones/V1_002_program-governance-root.md)
