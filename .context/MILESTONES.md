@@ -54,6 +54,7 @@ Acceptance:
 - [x] Remaining V0 active tensions are reviewed and archived after human approval.
 - [x] Monorepo program governance root rules are documented for projects that use context-gen.
 - [x] `check-consistency` detects nested milestone/tension governance files under a root governance system.
+- [x] Out-of-band code change intake is documented for fixes made outside the active agent workflow.
 
 Out of scope:
 

@@ -203,6 +203,82 @@ Decision: [human fill in]
 
 `context-gen check-consistency .` checks for nested `.context/MILESTONES.md` and nested `.context/TENSIONS_*.md` under an existing root governance system. It reports these as errors because they create competing governance authority. Plain nested `MILESTONES.md` files are warnings so humans can decide whether they are harmless implementation checklists or accidental roadmaps.
 
+## Out-of-Band Code Change Intake
+
+Out-of-band changes are code, artifacts, or configuration updates made outside the active agent workflow, for example a hotfix from a phone terminal, a direct developer edit, or a Gutenberg artifact fix made after testing generated HTML/Tailwind output.
+
+The agent cannot know the developer intent from the diff alone. It must reconcile the change before continuing work when the diff may create context debt.
+
+### Trigger Signals
+
+Run this intake when one or more are true:
+
+- `git status --short` shows source, artifact, config, or docs changes that the current agent did not make.
+- A change touches a module that has `.context/` or `.context/modules/` ownership notes.
+- A fix changes behavior, generated markup, CSS contracts, editor behavior, security/data handling, or workflow assumptions.
+- A fix appears outside the current milestone acceptance checklist or contradicts out-of-scope notes.
+- A test artifact or debugging session reveals a rule future agents must remember.
+
+Do not run the full intake for trivial typo fixes, formatting-only edits, generated files with no behavior impact, or changes already explained by an issue, commit message, or existing decision doc.
+
+### Classification
+
+Classify the change before writing docs:
+
+```text
+within milestone goal       -> update only the smallest relevant context/docs
+outside checklist           -> document why it was needed; update milestone only if acceptance changed
+scope expansion             -> ask human before changing milestone scope
+conflict with invariant     -> write TENSIONS_OPEN.md before proceeding
+production hotfix bypass    -> record evidence and follow-up verification
+```
+
+### Dev-Facing Questions
+
+Ask only for information missing from the diff, issue, or test output:
+
+1. What problem did this change fix?
+2. Why did it happen outside the normal milestone or agent workflow?
+3. What rule, constraint, or lesson should future agents and developers remember?
+4. What evidence verifies the fix, such as artifact path, test result, screenshot, URL, or reproduction note?
+
+These answers belong in human-readable docs when the change affects future decisions.
+
+### Agent-Facing Updates
+
+Keep agent-facing context short and operational:
+
+- Update the owning `.context/<module>.md` or `.context/modules/<module>.md` when future agents must know the rule before editing that module.
+- Update `.context/MILESTONES.md` only when acceptance criteria, milestone guardrails, or scope state changed.
+- Update `.context/TENSIONS_OPEN.md` when the change remains unresolved or conflicts with an invariant.
+- Update `.context/GLOBAL.md` only for project-wide rules or newly active docs that should be discovered during startup.
+
+Do not copy long decision rationale into `.context/`. Put rationale, evidence, alternatives, and follow-up work in `docs/decisions/`, `docs/workflows/`, or `docs/testing/`.
+
+### Future CLI/UI Contract
+
+A future `context-gen` UI or CLI should model this intake as a structured reconciliation record:
+
+```yaml
+change_source: dev-direct | hotfix | artifact-test | external-agent | unknown
+changed_paths:
+  - path
+classification: within-milestone | outside-checklist | scope-expansion | invariant-conflict | production-hotfix
+problem_fixed: text
+outside_workflow_reason: text
+future_rule: text
+evidence:
+  - text
+agent_context_targets:
+  - .context/modules/<module>.md
+dev_doc_targets:
+  - docs/decisions/<topic>.md
+tension_required: true | false
+milestone_update_required: true | false
+```
+
+The UI should optimize for short questions and prefill from `git diff`, issue text, test output, and existing context. The agent should never invent missing developer intent.
+
 ## Version Naming Rule
 
 For context-gen, `V0`, `V1`, `V2`, and `V3` are development milestone/phase codes. They are not official package versions.

@@ -5,23 +5,13 @@
 
 ## [auto] Tech Stack
 
-- Python 3.12
-- tree-sitter 0.25.2 + tree-sitter-rust + tree-sitter-typescript + tree-sitter-php
-- Click (CLI framework)
-- Rich (console output)
 
 ## [auto] Module Index
 
 Load file context của module cụ thể khi làm việc với nó:
 
-- [`schema.py`](.context/schema.md) — dataclasses, ParserPlugin, REGISTRY, markers
-- [`merger.py`](.context/merger.md) — render [auto] section, bảo vệ [manual], hash injection
-- [`cli.py`](.context/cli.md) — build, load, watch commands
-- [`staleness.py`](.context/staleness.md) — hash compute, extract, check_file, StalenessResult
-- [`tensions_writer.py`](.context/tensions_writer.md) — ghi staleness entries vào TENSIONS.md
-- [`parsers/rust_parser.py`](.context/parsers_rust_parser.md) — Rust AST parser + plugin registration
-- [`parsers/ts_parser.py`](.context/parsers_ts_parser.md) — TypeScript/TSX AST parser + plugin registration
-- [`parsers/php_parser.py`](.context/parsers_php_parser.md) — PHP AST parser + WP hook detection + plugin registration
+- [`.venv/bin`](.context/.venv_bin.md)
+
 <!-- AUTO_END -->
 
 <!-- MANUAL_START -->
@@ -90,11 +80,11 @@ for plugin in REGISTRY.values():
 ```
 <!-- AUTO_START | hash: a3f2c1d8 | built: 2026-05-17T10:23 -->
 ```
-Lần build sau, `staleness.check_file()` đọc hash cũ, tính hash mới. Nếu khác → `[auto]` đã thay đổi → ghi tension vào `TENSIONS.md` tự động (severity: low, Decision: Pending).
+Lần build sau, `staleness.check_file()` đọc hash cũ, tính hash mới. Nếu khác → `[auto]` đã thay đổi → ghi tension vào `TENSIONS_OPEN.md` tự động (severity: low, Decision: Pending).
 
-**Không block workflow**: chỉ warn, không dừng. Agent vẫn tiếp tục, human review TENSIONS.md sau.
+**Không block workflow**: chỉ warn, không dừng. Agent vẫn tiếp tục, human review `TENSIONS_OPEN.md` sau.
 
-**Files mới**: `staleness.py` (hash logic), `tensions_writer.py` (ghi TENSIONS.md idempotent).
+**Files mới**: `staleness.py` (hash logic), `tensions_writer.py` (ghi `TENSIONS_OPEN.md` idempotent).
 
 **Trade-off chấp nhận**: hash inject làm AUTO_START marker không còn là plain string `<!-- AUTO_START -->`. `merger.py` và `cli.py` load command phải dùng regex thay vì `str.index()` để tìm marker. Đã update cả hai.
 
@@ -105,6 +95,12 @@ Lần build sau, `staleness.check_file()` đọc hash cũ, tính hash mới. N�
 - `REGISTRY` chỉ được populate qua `register_plugin()`. Không được mutate trực tiếp từ `cli.py`.
 - Parser mới KHÔNG được yêu cầu sửa `cli.py` hay `merger.py`. Nếu cần sửa — đó là signal thiết kế sai.
 - `_process_directory()` phải language-agnostic. Không được có bất kỳ `if language == "rust"` nào trong function này.
+
+## [manual] Governance Decision — Out-of-band change intake
+
+Khi developer sửa code, artifact, config, hoặc docs ngoài active agent workflow, agent không được tự đoán intent từ diff. Nếu thay đổi có thể tạo context debt — ví dụ hotfix, Gutenberg artifact repair, CSS/editor contract change, generated output rule, security/data behavior, hoặc scope nằm ngoài milestone checklist — agent phải reconcile trước khi tiếp tục.
+
+Workflow: phân loại change, hỏi developer phần intent còn thiếu, cập nhật context ngắn cho agent trong `.context/`, và lưu rationale/evidence cho dev trong `docs/decisions/`, `docs/workflows/`, hoặc `docs/testing/`. Nếu change conflict invariant hoặc approved scope, ghi `TENSIONS_OPEN.md` trước khi proceed.
 
 ## [manual] Behavior chưa implement — Phase: V3+
 

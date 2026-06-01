@@ -107,6 +107,20 @@ Rules:
 - After adding, moving, or renaming a docs file, update `docs/README.md`.
 - If the current milestone changes, update `.context/MILESTONES.md`, `AGENTS.md`, and docs naming together.
 
+### Out-of-band code change intake
+
+Activate when `git status --short` or the current task shows code, artifact, config, or docs changes made outside the active agent workflow, such as direct developer edits, hotfixes, phone/Termux fixes, generated Gutenberg artifact repairs, or external-agent edits.
+
+If the changes may affect assumptions, milestone scope, module contracts, generated output, editor behavior, security/data handling, or workflow behavior:
+
+1. Classify whether the change is within milestone goal, outside checklist, scope expansion, invariant conflict, or production hotfix bypass.
+2. Ask developer only for missing intent: problem fixed, why it happened outside normal milestone/agent workflow, what future rule must be remembered, and evidence verifying the fix.
+3. Update the smallest relevant `.context/` file for agent-facing rules.
+4. Update `docs/decisions/`, `docs/workflows/`, or `docs/testing/` for dev-facing rationale and evidence.
+5. Write `TENSIONS_OPEN.md` before proceeding if the change conflicts with an invariant or approved scope.
+
+Do not run this full intake for trivial typo, formatting-only, or already-documented changes.
+
 ### Sau khi load xong — bắt buộc
 
 ```

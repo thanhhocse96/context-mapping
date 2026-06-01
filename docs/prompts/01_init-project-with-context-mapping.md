@@ -125,8 +125,15 @@ If AGENTS.md does not exist, create one with:
 - instruction that monorepo/multi-project milestones and tensions live at the governance root, while subprojects use `Area:` or tags
 - instruction that `.local/ENVIRONMENT.md` is machine-local and must not be committed
 - instruction that `[manual]` sections must not be overwritten
+- instruction to reconcile out-of-band code changes before continuing when direct developer edits, hotfixes, or artifact fixes may create context debt
 
 If AGENTS.md exists, add only the missing context-mapping protocol. Preserve existing project-specific rules.
+
+Add this out-of-band change rule when missing:
+
+```text
+If git status shows code, artifact, config, or docs changes the current agent did not make, classify whether they affect assumptions, milestone scope, module contracts, generated output, editor behavior, security/data handling, or workflow behavior. If they do, ask the developer what problem was fixed, why it happened outside the normal milestone or agent workflow, what future rule should be remembered, and what evidence verifies it. Update the smallest relevant `.context/` file for agent-facing rules and `docs/decisions/`, `docs/workflows/`, or `docs/testing/` for human-readable rationale. Write `TENSIONS_OPEN.md` before proceeding if the change conflicts with an invariant or approved scope.
+```
 
 6. Verify
 
